@@ -39,6 +39,9 @@ proguard/
 # Eclipse Metadata
 .metadata/
 
+# Eclipse Recommenders
+.recommenders/
+
 # Windows clutter
 Thumbs.db
 
