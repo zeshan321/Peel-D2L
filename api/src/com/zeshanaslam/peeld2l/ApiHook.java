@@ -35,6 +35,9 @@ public class ApiHook {
 
 		// Disable logging
 		java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF); 
+
+		// Disable CSS
+		webClient.getOptions().setCssEnabled(false);
 	}
 
 	public void loadPage() {
@@ -89,14 +92,41 @@ public class ApiHook {
 				if (de.getId().contains("D2L_LE_Content_TreeBrowser_D2L.LE.Content.ContentObject.ModuleCO-")) {
 					String[] split = de.asText().split("\\n");
 					List<String> ob = new ArrayList<>();
-					
+
 					for (int i = 1; i < split.length; i++) {
 						ob.add(split[i]);
 					}
-					
+
 					list.add(new ContentObject(split[0], ob));
 				}
 			}
+			webClient.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public List<LockerObject> getLocker(boolean previewLink) {
+		List<LockerObject> list = new ArrayList<>();
+		try {
+			WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
+			webClient.setCookieManager(cookieManager);
+
+			HtmlPage page = webClient.getPage("https://pdsb.elearningontario.ca/d2l/lms/locker/locker.d2l?ou=8340");
+
+			for (Object object : page.getByXPath("//a")) {
+				DomElement de = (DomElement) object;
+				if (de.asXml().toString().contains("/d2l/common/viewFile.d2lfile/Database/")) {
+					if (!previewLink) {
+						list.add(new LockerObject(de.getAttribute("title").replace("Open ", ""),  "https://pdsb.elearningontario.ca" + de.getAttribute("href").replace("&display=1", "")));
+					} else {
+						list.add(new LockerObject(de.getAttribute("title").replace("Open ", ""),  "https://pdsb.elearningontario.ca" + de.getAttribute("href")));
+
+					}
+				}
+			}
+
 			webClient.close();
 		} catch (Exception e) {
 			e.printStackTrace();
