@@ -32,7 +32,7 @@ public class Main {
 
 	// http://localhost:8001/data?user=test&pass=testing&type=
 	// type: content, course, locker
-	// Options: courseid, lockerpreview
+	// Options: courseid, linkpreview
 	static class LoingHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange httpExchange) throws IOException {
@@ -91,7 +91,7 @@ public class Main {
 				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
 			case "locker":
 				// Params check
-				if (!params.containsKey("lockerpreview")) {
+				if (!params.containsKey("linkpreview")) {
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 					return;
 				}
