@@ -1,16 +1,13 @@
-package com.zeshanaslam.peeld2l;
+package com.zeshanaslam.d2lhook;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -19,17 +16,18 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
 
-public class ApiHook {
+public class D2LHook {
 
 	String username;
 	String password;
+	boolean loginSuc = true;
 	String URL = "https://pdsb.elearningontario.ca";
 
 	WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
 	CookieManager cookieManager;
 	HtmlPage page = null;
 
-	public ApiHook(String username, String password) {
+	public D2LHook(String username, String password) {
 		this.username = username;
 		this.password = password;
 
@@ -55,10 +53,16 @@ public class ApiHook {
 			pass.setValueAttribute(password);
 
 			page = button.click();
+			if (page.asXml().contains("*  Please try again.")) {
+				loginSuc = false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+	}
+	
+	public boolean loginStatus() {
+		return loginSuc;
 	}
 
 	public List<CourseObject> getCourses() {
