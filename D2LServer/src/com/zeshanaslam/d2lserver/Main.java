@@ -1,7 +1,6 @@
 package com.zeshanaslam.d2lserver;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +18,7 @@ import com.zeshanaslam.d2lserver.ServerUtils.ErrorType;
 
 
 public class Main {
-	
+
 	public static  HashMap<String, DataObject> apiData = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
@@ -27,9 +26,11 @@ public class Main {
 		server.createContext("/data", new LoingHandler());
 		server.setExecutor(null); // creates a default executor
 		server.start();
+
+		// Make sure to add encryption
 	}
 
-	// http://localhost:8000/data?user=test&pass=testing&type=
+	// http://localhost:8001/data?user=test&pass=testing&type=
 	// type: content, course, locker
 	// Options: courseid, lockerpreview
 	static class LoingHandler implements HttpHandler {
@@ -37,21 +38,21 @@ public class Main {
 		public void handle(HttpExchange httpExchange) throws IOException {
 			ServerUtils serverUtils = new ServerUtils();
 			Map<String, String> params = serverUtils.queryToMap(httpExchange.getRequestURI().getQuery()); 
-			
+
 			// Params check
 			if (!params.containsKey("user") || !params.containsKey("pass") || !params.containsKey("type")) {
-				serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invaild));
+				serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 				return;
 			}
-			
+
 			String username = params.get("user"), password = params.get("pass");
-			
+
 			if (apiData.containsKey(username) && apiData.get(username).password.equals(password)) {
 				getData(httpExchange, username, params);
 			} else {
 				D2LHook d2lHook = new D2LHook(username, password);
 				d2lHook.loadPage();
-				
+
 				if (d2lHook.loginStatus()) {
 					apiData.put(username, new DataObject(password, d2lHook));
 					getData(httpExchange, username, params);
@@ -60,48 +61,51 @@ public class Main {
 				}
 			}
 		}
-		
+
 		public void getData(HttpExchange httpExchange, String user, Map<String, String> params) {
 			ServerUtils serverUtils = new ServerUtils();
 			List<String> sterilizedObject = new ArrayList<>();
 			D2LHook d2lHook = apiData.get(user).d2lHook;
-			
+
 			switch (params.get("type")) {
 			case "course":
 				// Sterilize objects
 				for (CourseObject courseObject: d2lHook.getCourses()) {
 					sterilizedObject.add(courseObject.toString());
 				}
-				
+
 				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
 			case "content":
 				// Params check
 				if (!params.containsKey("courseid")) {
-					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invaild));
+					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 					return;
 				}
-				
+
 				// Sterilize objects
 				sterilizedObject = new ArrayList<>();
 				for (ContentObject contentObject: d2lHook.getCourseContent(params.get("courseid"))) {
 					sterilizedObject.add(contentObject.toString());
 				}
-				
+
 				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
 			case "locker":
 				// Params check
 				if (!params.containsKey("lockerpreview")) {
-					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invaild));
+					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 					return;
 				}
-				
+
 				// Sterilize objects
 				sterilizedObject = new ArrayList<>();
 				for (LockerObject lockerObject: d2lHook.getLocker(Boolean.valueOf(params.get("lockerpreview")))) {
 					sterilizedObject.add(lockerObject.toString());
 				}
-				
+
 				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
+			
+			default:
+				serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 			}
 		}
 	}

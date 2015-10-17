@@ -38,42 +38,44 @@ public class ServerUtils {
 	}
 
 	public enum ErrorType {
-		Login, Invaild
+		Login, Invalid
 	}
 
 	public String getError(ErrorType type) {
-		String error = null;
 		JSONObject jsonObject = new JSONObject();
 		try {
 			switch (type) {
 			case Login:
 				jsonObject.put("status", "failed");
-				jsonObject.put("data", "Invaild login excpetion");
-			case Invaild:
+				jsonObject.put("data", "Invalid login exception");
+				return jsonObject.toString(2);
+			case Invalid:
 				jsonObject.put("status", "failed");
-				jsonObject.put("data", "Invaild type or missing parameters");
+				jsonObject.put("data", "Invalid type or missing parameters");
+				return jsonObject.toString(2);
 			}
 
-			error = jsonObject.toString();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		return error;
+		return null;
 	}
 
 	public String returnData(List<String> list) {
+		JSONObject jsonObject = null;
 		String data = null;
-
+		
 		try {
-			JSONObject jsonObject = new JSONObject();
+			jsonObject = new JSONObject();
 			jsonObject.put("status", "success");
 			jsonObject.put("data", list);
 
-			data = jsonObject.toString();
+			data = jsonObject.toString(2);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		
 
 		return data;
 	}
