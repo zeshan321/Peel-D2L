@@ -98,7 +98,7 @@ public class Main {
 
 				// Sterilize objects
 				sterilizedObject = new ArrayList<>();
-				for (LockerObject lockerObject: d2lHook.getLocker(Boolean.valueOf(params.get("lockerpreview")))) {
+				for (LockerObject lockerObject: d2lHook.getLocker(Boolean.valueOf(params.get("linkpreview")))) {
 					sterilizedObject.add(lockerObject.toString());
 				}
 
