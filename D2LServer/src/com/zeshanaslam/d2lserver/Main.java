@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -26,6 +29,10 @@ public class Main {
 		server.createContext("/data", new LoingHandler());
 		server.setExecutor(null); // creates a default executor
 		server.start();
+		
+		// Remove D2Lhook in case of session timeout
+		 ScheduledExecutorService s = Executors.newSingleThreadScheduledExecutor();
+		 s.scheduleAtFixedRate(new SessionTask(), 0, 5, TimeUnit.MINUTES);
 
 		// Make sure to add encryption
 	}
@@ -54,7 +61,7 @@ public class Main {
 				d2lHook.loadPage();
 
 				if (d2lHook.loginStatus()) {
-					apiData.put(username, new DataObject(password, d2lHook));
+					apiData.put(username, new DataObject(password, System.currentTimeMillis(), d2lHook));
 					getData(httpExchange, username, params);
 				} else {
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Login));
