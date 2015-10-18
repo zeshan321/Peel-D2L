@@ -3,9 +3,9 @@ package com.zeshanaslam.d2lserver;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,14 +62,14 @@ public class ServerUtils {
 		return null;
 	}
 
-	public String returnData(List<String> list) {
+	public String returnData(JSONArray array) {
 		JSONObject jsonObject = null;
 		String data = null;
 		
 		try {
 			jsonObject = new JSONObject();
 			jsonObject.put("status", "success");
-			jsonObject.put("data", list);
+			jsonObject.put("data", array);
 
 			data = jsonObject.toString(2);
 		} catch (JSONException e) {

@@ -2,13 +2,15 @@ package com.zeshanaslam.d2lserver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -29,10 +31,10 @@ public class Main {
 		server.createContext("/data", new LoingHandler());
 		server.setExecutor(null); // creates a default executor
 		server.start();
-		
+
 		// Remove D2Lhook in case of session timeout
-		 ScheduledExecutorService s = Executors.newSingleThreadScheduledExecutor();
-		 s.scheduleAtFixedRate(new SessionTask(), 0, 5, TimeUnit.MINUTES);
+		ScheduledExecutorService s = Executors.newSingleThreadScheduledExecutor();
+		s.scheduleAtFixedRate(new SessionTask(), 0, 5, TimeUnit.MINUTES);
 
 		// Make sure to add encryption
 	}
@@ -70,49 +72,63 @@ public class Main {
 		}
 
 		public void getData(HttpExchange httpExchange, String user, Map<String, String> params) {
-			ServerUtils serverUtils = new ServerUtils();
-			List<String> sterilizedObject = new ArrayList<>();
-			D2LHook d2lHook = apiData.get(user).d2lHook;
+			try {
+				ServerUtils serverUtils = new ServerUtils();
+				JSONArray jsonArray = new JSONArray();
+				D2LHook d2lHook = apiData.get(user).d2lHook;
 
-			switch (params.get("type")) {
-			case "course":
-				// Sterilize objects
-				for (CourseObject courseObject: d2lHook.getCourses()) {
-					sterilizedObject.add(courseObject.toString());
-				}
+				switch (params.get("type")) {
+				case "course":
+					// Sterilize objects
+					for (CourseObject courseObject: d2lHook.getCourses()) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("name", courseObject.name);
+						jsonObject.put("ID", courseObject.ID);
+						
+						jsonArray.put(jsonObject);
+					}
 
-				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
-			case "content":
-				// Params check
-				if (!params.containsKey("courseid")) {
+					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+				case "content":
+					// Params check
+					if (!params.containsKey("courseid")) {
+						serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
+						return;
+					}
+
+					// Sterilize objects
+					for (ContentObject contentObject: d2lHook.getCourseContent(params.get("courseid"))) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("name", contentObject.name);
+						jsonObject.put("subContent", contentObject.subContent);
+						
+						jsonArray.put(jsonObject);
+					}
+
+					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+				case "locker":
+					// Params check
+					if (!params.containsKey("linkpreview")) {
+						serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
+						return;
+					}
+
+					// Sterilize objects
+					for (LockerObject lockerObject: d2lHook.getLocker(Boolean.valueOf(params.get("linkpreview")))) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("name", lockerObject.name);
+						jsonObject.put("link", lockerObject.link);
+						
+						jsonArray.put(jsonObject);
+					}
+
+					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+
+				default:
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
-					return;
 				}
-
-				// Sterilize objects
-				sterilizedObject = new ArrayList<>();
-				for (ContentObject contentObject: d2lHook.getCourseContent(params.get("courseid"))) {
-					sterilizedObject.add(contentObject.toString());
-				}
-
-				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
-			case "locker":
-				// Params check
-				if (!params.containsKey("linkpreview")) {
-					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
-					return;
-				}
-
-				// Sterilize objects
-				sterilizedObject = new ArrayList<>();
-				for (LockerObject lockerObject: d2lHook.getLocker(Boolean.valueOf(params.get("linkpreview")))) {
-					sterilizedObject.add(lockerObject.toString());
-				}
-
-				serverUtils.writeResponse(httpExchange, serverUtils.returnData(sterilizedObject));
-			
-			default:
-				serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
+			} catch (JSONException e ) {
+				e.printStackTrace();
 			}
 		}
 	}
