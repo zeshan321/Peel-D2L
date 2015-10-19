@@ -21,13 +21,12 @@ import com.zeshanaslam.d2lhook.D2LHook;
 import com.zeshanaslam.d2lhook.LockerObject;
 import com.zeshanaslam.d2lserver.ServerUtils.ErrorType;
 
-
 public class Main {
 
 	public static  HashMap<String, DataObject> apiData = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
-		HttpServer server = HttpServer.create(new InetSocketAddress(8001), 0);
+		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 		server.createContext("/data", new LoingHandler());
 		server.setExecutor(null); // creates a default executor
 		server.start();

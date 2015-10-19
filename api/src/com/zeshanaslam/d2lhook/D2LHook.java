@@ -74,7 +74,7 @@ public class D2LHook {
 
 			for (Object object : page.getByXPath("//a[@class='vui-link d2l-link d2l-left']")) {
 				DomElement de = (DomElement) object;
-				courses.add(new CourseObject(de.getAttribute("href").replace("/d2l/lp/ouHome/home.d2l?ou=", ""), de.getAttribute("title").replace("Enter", "")));
+				courses.add(new CourseObject(de.getAttribute("href").replace("/d2l/lp/ouHome/home.d2l?ou=", ""), de.getAttribute("title").replace("Enter ", "")));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
