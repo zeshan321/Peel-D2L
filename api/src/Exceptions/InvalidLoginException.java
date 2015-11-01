@@ -1,4 +1,4 @@
-package com.zeshanaslam.d2lhook;
+package Exceptions;
 
 public class InvalidLoginException extends Exception
 {

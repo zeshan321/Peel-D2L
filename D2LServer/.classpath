@@ -6,8 +6,8 @@
 			<accessrule kind="accessible" pattern="com/sun/net/httpserver/**"/>
 		</accessrules>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/zesha/Desktop/testing/test.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zesha/Desktop/Peel-D2L/api/libs/htmlunit-2.18-OSGi.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zesha/Desktop/Peel-D2L/api/libs/java-json.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zesha/Desktop/testing/test.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

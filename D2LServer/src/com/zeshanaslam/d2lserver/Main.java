@@ -15,11 +15,13 @@ import org.json.JSONObject;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.zeshanaslam.d2lhook.ContentObject;
-import com.zeshanaslam.d2lhook.CourseObject;
 import com.zeshanaslam.d2lhook.D2LHook;
-import com.zeshanaslam.d2lhook.LockerObject;
 import com.zeshanaslam.d2lserver.ServerUtils.ErrorType;
+
+import Objects.ContentObject;
+import Objects.CourseObject;
+import Objects.LockerObject;
+import Objects.NotificationObject;
 
 public class Main {
 
@@ -68,6 +70,8 @@ public class Main {
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Login));
 				}
 			}
+
+			httpExchange.close();
 		}
 
 		public void getData(HttpExchange httpExchange, String user, Map<String, String> params) {
@@ -83,28 +87,34 @@ public class Main {
 						JSONObject jsonObject = new JSONObject();
 						jsonObject.put("name", courseObject.name);
 						jsonObject.put("ID", courseObject.ID);
-						
+
 						jsonArray.put(jsonObject);
 					}
 
 					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					break;
 				case "content":
-					// Params check
-					if (!params.containsKey("courseid")) {
+					try {
+						// Params check
+						if (!params.containsKey("courseid")) {
+							serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
+							return;
+						}
+
+						// Sterilize objects
+						for (ContentObject contentObject: d2lHook.getCourseContent(params.get("courseid"))) {
+							JSONObject jsonObject = new JSONObject();
+							jsonObject.put("name", contentObject.name);
+							jsonObject.put("subContent", contentObject.subContent);
+
+							jsonArray.put(jsonObject);
+						}
+
+						serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					} catch(Exception e) {
 						serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
-						return;
 					}
-
-					// Sterilize objects
-					for (ContentObject contentObject: d2lHook.getCourseContent(params.get("courseid"))) {
-						JSONObject jsonObject = new JSONObject();
-						jsonObject.put("name", contentObject.name);
-						jsonObject.put("subContent", contentObject.subContent);
-						
-						jsonArray.put(jsonObject);
-					}
-
-					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					break;
 				case "locker":
 					// Params check
 					if (!params.containsKey("linkpreview")) {
@@ -117,12 +127,25 @@ public class Main {
 						JSONObject jsonObject = new JSONObject();
 						jsonObject.put("name", lockerObject.name);
 						jsonObject.put("link", lockerObject.link);
-						
+
 						jsonArray.put(jsonObject);
 					}
 
 					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					break;
+				case "notifications":
+					// Sterilize objects
+					for (NotificationObject notificationObject: d2lHook.getNotifications()) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("title", notificationObject.title);
+						jsonObject.put("desc", notificationObject.desc);
+						jsonObject.put("date", notificationObject.date);
 
+						jsonArray.put(jsonObject);
+					}
+
+					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					break;
 				default:
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 				}

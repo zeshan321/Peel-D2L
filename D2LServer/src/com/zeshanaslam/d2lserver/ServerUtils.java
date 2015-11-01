@@ -16,9 +16,12 @@ public class ServerUtils {
 	public void writeResponse(HttpExchange t, String response) {
 		try {
 			t.sendResponseHeaders(200, response.length());
+
 			OutputStream os = t.getResponseBody();
 			os.write(response.getBytes());
+			os.flush();
 			os.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -65,7 +68,7 @@ public class ServerUtils {
 	public String returnData(JSONArray array) {
 		JSONObject jsonObject = null;
 		String data = null;
-		
+
 		try {
 			jsonObject = new JSONObject();
 			jsonObject.put("status", "success");
@@ -75,7 +78,7 @@ public class ServerUtils {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 
 		return data;
 	}

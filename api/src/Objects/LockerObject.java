@@ -1,4 +1,4 @@
-package com.zeshanaslam.d2lhook;
+package Objects;
 
 public class LockerObject {
 	
