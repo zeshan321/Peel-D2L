@@ -146,13 +146,13 @@ public class D2LHook {
 		return list;
 	}
 
-	public List<NotificationObject> getNotifications() {
+	public List<NotificationObject> getNotifications(String ID) throws InvaildCourseException {
 		List<NotificationObject> list = new ArrayList<>();
 		try {
 			WebClient webClient = new WebClient(BrowserVersion.FIREFOX_38);
 			webClient.setCookieManager(cookieManager);
 
-			UnexpectedPage page = webClient.getPage("https://pdsb.elearningontario.ca/d2l/MiniBar/6594660/ActivityFeed/GetAlerts?Category=1&_d2l_prc%24headingLevel=2&_d2l_prc%24scope=&_d2l_prc%24hasActiveForm=false&isXhr=true&requestId=2");
+			UnexpectedPage page = webClient.getPage("https://pdsb.elearningontario.ca/d2l/MiniBar/" + ID + "/ActivityFeed/GetAlerts?Category=1&_d2l_prc%24headingLevel=2&_d2l_prc%24scope=&_d2l_prc%24hasActiveForm=false&isXhr=true&requestId=2");
 			NotificationFormater notificationFormater = new NotificationFormater(page.getWebResponse().getContentAsString());
 			
 			webClient.close();
@@ -164,7 +164,7 @@ public class D2LHook {
 				list.add(new NotificationObject(split[0].trim(), split[1].trim(), split[2].trim()));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new InvaildCourseException("Invaild Course ID");
 		}
 		
 		return list;

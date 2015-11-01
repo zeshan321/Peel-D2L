@@ -134,17 +134,27 @@ public class Main {
 					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
 					break;
 				case "notifications":
-					// Sterilize objects
-					for (NotificationObject notificationObject: d2lHook.getNotifications()) {
-						JSONObject jsonObject = new JSONObject();
-						jsonObject.put("title", notificationObject.title);
-						jsonObject.put("desc", notificationObject.desc);
-						jsonObject.put("date", notificationObject.date);
+					try {
+						// Params check
+						if (!params.containsKey("courseid")) {
+							serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
+							return;
+						}
 
-						jsonArray.put(jsonObject);
+						// Sterilize objects
+						for (NotificationObject notificationObject: d2lHook.getNotifications(params.get("courseid"))) {
+							JSONObject jsonObject = new JSONObject();
+							jsonObject.put("title", notificationObject.title);
+							jsonObject.put("desc", notificationObject.desc);
+							jsonObject.put("date", notificationObject.date);
+
+							jsonArray.put(jsonObject);
+						}
+
+						serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
+					} catch(Exception e) {
+						serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
 					}
-
-					serverUtils.writeResponse(httpExchange, serverUtils.returnData(jsonArray));
 					break;
 				default:
 					serverUtils.writeResponse(httpExchange, serverUtils.getError(ErrorType.Invalid));
