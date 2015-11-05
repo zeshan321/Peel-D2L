@@ -25,24 +25,22 @@ import Objects.NotificationObject;
 
 public class Main {
 
-	public static  HashMap<String, DataObject> apiData = new HashMap<>();
+	public static HashMap<String, DataObject> apiData = new HashMap<>();
+	public static ConfigLoader config = null;
 
 	public static void main(String[] args) throws Exception {
-		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+		config = new ConfigLoader();
+		
+		HttpServer server = HttpServer.create(new InetSocketAddress(config.getInt("port")), 0);
 		server.createContext("/data", new LoingHandler());
 		server.setExecutor(null); // creates a default executor
 		server.start();
 
 		// Remove D2Lhook in case of session timeout
 		ScheduledExecutorService s = Executors.newSingleThreadScheduledExecutor();
-		s.scheduleAtFixedRate(new SessionTask(), 0, 5, TimeUnit.MINUTES);
-
-		// Make sure to add encryption
+		s.scheduleAtFixedRate(new SessionTask(), 0, config.getInt("timeoutCheck"), TimeUnit.SECONDS);
 	}
 
-	// http://localhost:8001/data?user=test&pass=testing&type=
-	// type: content, course, locker
-	// Options: courseid, linkpreview
 	static class LoingHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange httpExchange) throws IOException {
